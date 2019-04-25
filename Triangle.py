@@ -44,7 +44,7 @@ class Triangle:
         return float(max(self.a_length, self.b_length, self.c_length))
 
     @property
-    def sharpest_angle(self):
+    def sharpest_angle(self) -> float:
         return min(self.a_angle, self.b_angle, self.c_angle)
 
     @property
@@ -89,58 +89,13 @@ class Triangle:
         else:
             return self.c_length
 
-    @property
-    def point_end_of_hypotenuse(self):
-        if self.hypotenuse_length == self.a_length:
-            if self.b_point == self.point_with_sharpest_angle:
-                return self.c_point
-            else:
-                return self.b_point
-        if self.hypotenuse_length == self.b_length:
-            if self.a_point == self.point_with_sharpest_angle:
-                return self.c_point
-            else:
-                return self.a_point
-        if self.hypotenuse_length == self.c_length:
-            if self.b_point == self.point_with_sharpest_angle:
-                return self.b_point
-            else:
-                return self.a_point
-
-    @point_end_of_hypotenuse.setter
-    def point_end_of_hypotenuse(self, point: Point):
-        if self.point_end_of_hypotenuse == self.c_point:
-            self.c_point = point
-        elif self.point_end_of_hypotenuse == self.b_point:
-            self.b_point = point
-        else:
-            self.a_point = point
-
-    @property
-    def point_between_the_cathets(self):  # Punkt zwischen den Katheten
-        if self.a_length == self.hypotenuse_length:
-            return self.a_point
-        elif self.b_length == self.hypotenuse_length:
-            return self.b_point
-        elif self.c_length == self.hypotenuse_length:
-            return self.b_point
-
-    @point_between_the_cathets.setter
-    def point_between_the_cathets(self, point: Point):
-        if self.point_between_the_cathets == self.a_point:
-            self.a_point = point
-        elif self.point_between_the_cathets == self.b_point:
-            self.b_point = point
-        else:
-            self.c_point = point
-
     def intersects(self, other) -> bool:
         return self.sympy_triangle.intersect(other.sympy_triangle)
 
-    def show(self, canvas: Canvas):
+    def show(self, canvas: Canvas, color = "black"):
         if self.tkinter_polygon is not None:
             canvas.delete(self.tkinter_polygon)
-        self.tkinter_polygon = canvas.create_polygon([self.a_point.x, self.a_point.y], [self.b_point.x, self.b_point.y], [self.c_point.x, self.c_point.y])
+        self.tkinter_polygon = canvas.create_polygon([self.a_point.x, self.a_point.y], [self.b_point.x, self.b_point.y], [self.c_point.x, self.c_point.y], fill=color)
         canvas.pack()
         canvas.update()
 
