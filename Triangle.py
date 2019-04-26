@@ -48,32 +48,17 @@ class Triangle:
         return min(self.a_angle, self.b_angle, self.c_angle)
 
     @property
-    def point_with_sharpest_angle(self):
-        for key, value in self.sympy_triangle.angles.items():
-            if degrees(float(value)) == self.sharpest_angle:
-                return key
-
-    @point_with_sharpest_angle.setter
-    def point_with_sharpest_angle(self, point: Point):
-        if self.point_with_sharpest_angle == self.a_point:
-            self.a_point = point
-        elif self.point_with_sharpest_angle == self.b_point:
-            self.b_point = point
-        elif self.point_with_sharpest_angle == self.c_point:
-            self.c_point = point
-
-    @property
     def sharpest_angle_adjacent_length(self):
-
+        return float(sorted([self.a_length, self.b_length, self.c_length], reverse=True)[1])
 
     @property
     def opposite_sharpest_angle_length(self):
-        return min(self.a_length, self.b_length, self.c_length)
+        return float(min(self.a_length, self.b_length, self.c_length))
 
     def intersects(self, other) -> bool:
         return self.sympy_triangle.intersect(other.sympy_triangle)
 
-    def show(self, canvas: Canvas, color = "black"):
+    def show(self, canvas: Canvas, color="black"):
         if self.tkinter_polygon is not None:
             canvas.delete(self.tkinter_polygon)
         self.tkinter_polygon = canvas.create_polygon([round(self.a_point.x), round(self.a_point.y)], [round(self.b_point.x), round(self.b_point.y)], [round(self.c_point.x), round(self.c_point.y)], fill=color)

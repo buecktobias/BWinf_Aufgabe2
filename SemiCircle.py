@@ -18,3 +18,12 @@ class SemiCircle:
     def show(self, canvas, color="black"):
         for triangle in self.triangles:
             triangle.show(canvas, color)
+
+    def get_all_triangles_from_an_angle_of_90(self) -> List[Triangle]:  # gibt alle Dreiecke zurück
+        current_degree = 0
+        triangles_from_an_angle_of_90: List[Triangle] = []
+        for triangle in self.triangles:
+            current_degree += triangle.sharpest_angle
+            if current_degree > 90:
+                triangles_from_an_angle_of_90.append(triangle)
+        return triangles_from_an_angle_of_90

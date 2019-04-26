@@ -1,4 +1,5 @@
 import itertools
+import secrets
 from math import cos, radians, sin
 from typing import List, Optional
 
@@ -73,27 +74,41 @@ def set_triangle_position_on_the_road(triangle: Triangle, point_at_which_semi_ci
     triangle.c_point = Point(point__between_the_cathets)
 
 
+
+def is_triangle_intersecting_triangles_from_former_semi_circle(triangle, former_semi_circle: SemiCircle):
+    for other_triangle in former_semi_circle.get_all_triangles_from_an_angle_of_90():
+        if triangle.intersects(other_triangle):
+            return True
+    return False
+
+
 def set_triangles_on_the_road(semi_circle_list, canvas):
     point_at_which_semi_circle_is_placed = 0
     for i, semi_circle in enumerate(semi_circle_list):
         if i == 0:
-            semi_circle.triangles.sort(key=lambda triangle: triangle.hypotenuse_length)
-        elif i == len(semi_circle_list) - 1:
             semi_circle.triangles.sort(key=lambda triangle: triangle.hypotenuse_length, reverse=True)
+        elif i == len(semi_circle_list) - 1:
+            semi_circle.triangles.sort(key=lambda triangle: triangle.hypotenuse_length, reverse=False)
         else:
             semi_circle.triangles.sort(key=lambda my_triangle: my_triangle.hypotenuse_length)
             semi_circle.triangles = semi_circle_list[i].triangles[len(semi_circle_list[i].triangles) % 2::2] + semi_circle_list[i].triangles[::-2]
 
-    if i == len(semi_circle_list) - 1:  # last semi circle
-        sum_of_angles_before = 180 - semi_circle.angle_sum
-    else:
-        sum_of_angles_before = 0
-        point_at_which_semi_circle_is_placed += semi_circle_list[i].triangles[0].hypotenuse_length
+        if i == len(semi_circle_list) - 1:  # last semi circle
+            sum_of_angles_before = 180 - semi_circle.angle_sum
+        else:
+            sum_of_angles_before = 0
+            point_at_which_semi_circle_is_placed += semi_circle.triangles[0].hypotenuse_length
 
-    for triangle in semi_circle.triangles:
-        set_triangle_position_on_the_road(triangle, point_at_which_semi_circle_is_placed, sum_of_angles_before)
-        sum_of_angles_before += triangle.sharpest_angle
-        triangle.show(canvas)
+        for triangle in semi_circle.triangles:
+            set_triangle_position_on_the_road(triangle, point_at_which_semi_circle_is_placed, sum_of_angles_before)
+            if i > 0:
+                while is_triangle_intersecting_triangles_from_former_semi_circle(triangle, semi_circle_list[i-1]):
+                    point_at_which_semi_circle_is_placed += 1
+                    set_triangle_position_on_the_road(triangle, point_at_which_semi_circle_is_placed, sum_of_angles_before)
+
+            sum_of_angles_before += triangle.sharpest_angle
+            triangle.show(canvas, "#" + str(secrets.token_hex(3)))
+        point_at_which_semi_circle_is_placed += semi_circle.triangles[-1].hypotenuse_length
 
 
 def main():
@@ -104,16 +119,18 @@ def main():
     canvas_width: int = 800
     canvas_height: int = 800
     canvas: tk.Canvas = tk.Canvas(root, width=canvas_width, height=canvas_height)
-    triangle.show(canvas)
     semi_circle_list = make_semi_circle_list(triangles)
     colors = ["yellow", "red", "blue"]
     for counter, semi_circle in enumerate(semi_circle_list):
+        pass
         print(calculate_triangles_angles_sum(semi_circle.triangles))
         semi_circle.show(canvas, colors[counter])
     set_triangles_on_the_road(semi_circle_list, canvas)
+    #test_triangle = semi_circle_list[0].triangles[2]
+    #test_triangle.show(canvas)
     root.mainloop()
 
 
 if __name__ == '__main__':
-    STREET_Y_POSITION = 200
+    STREET_Y_POSITION = 400
     main()
