@@ -1,4 +1,5 @@
 import itertools
+from math import cos, radians, sin
 from typing import List, Optional
 
 from sympy import Point
@@ -62,6 +63,39 @@ def make_semi_circle_list(triangles):
     return semi_circle_list
 
 
+# TODO triangle naming counter clockwise
+def set_triangle_position_on_the_road(triangle: Triangle, point_at_which_semi_circle_is_placed, sum_of_angles_before):
+    point_with_sharpest_angle =  (point_at_which_semi_circle_is_placed, STREET_Y_POSITION)
+    point_at_end_of_hypotenuse = (point_with_sharpest_angle[0] - float(cos(radians(sum_of_angles_before)) * triangle.hypotenuse_length), point_with_sharpest_angle[1] + float((sin(radians(sum_of_angles_before)) * triangle.hypotenuse_length)))
+    point__between_the_cathets = (point_with_sharpest_angle[0] - float((cos(radians(triangle.sharpest_angle + sum_of_angles_before)) * triangle.sharpest_angle_adjacent_length)), point_with_sharpest_angle[1] + float((sin(radians(triangle.sharpest_angle + sum_of_angles_before)) * triangle.sharpest_angle_adjacent_length)))
+    triangle.a_point = Point(point_with_sharpest_angle)
+    triangle.b_point = Point(point_at_end_of_hypotenuse)
+    triangle.c_point = Point(point__between_the_cathets)
+
+
+def set_triangles_on_the_road(semi_circle_list, canvas):
+    point_at_which_semi_circle_is_placed = 0
+    for i, semi_circle in enumerate(semi_circle_list):
+        if i == 0:
+            semi_circle.triangles.sort(key=lambda triangle: triangle.hypotenuse_length)
+        elif i == len(semi_circle_list) - 1:
+            semi_circle.triangles.sort(key=lambda triangle: triangle.hypotenuse_length, reverse=True)
+        else:
+            semi_circle.triangles.sort(key=lambda my_triangle: my_triangle.hypotenuse_length)
+            semi_circle.triangles = semi_circle_list[i].triangles[len(semi_circle_list[i].triangles) % 2::2] + semi_circle_list[i].triangles[::-2]
+
+    if i == len(semi_circle_list) - 1:  # last semi circle
+        sum_of_angles_before = 180 - semi_circle.angle_sum
+    else:
+        sum_of_angles_before = 0
+        point_at_which_semi_circle_is_placed += semi_circle_list[i].triangles[0].hypotenuse_length
+
+    for triangle in semi_circle.triangles:
+        set_triangle_position_on_the_road(triangle, point_at_which_semi_circle_is_placed, sum_of_angles_before)
+        sum_of_angles_before += triangle.sharpest_angle
+        triangle.show(canvas)
+
+
 def main():
     triangles = get_triangles_from_file("dreiecke3.txt")
     triangles = [Triangle(*triangle) for triangle in triangles]
@@ -76,9 +110,10 @@ def main():
     for counter, semi_circle in enumerate(semi_circle_list):
         print(calculate_triangles_angles_sum(semi_circle.triangles))
         semi_circle.show(canvas, colors[counter])
-    print("END")
+    set_triangles_on_the_road(semi_circle_list, canvas)
     root.mainloop()
 
 
 if __name__ == '__main__':
+    STREET_Y_POSITION = 200
     main()
