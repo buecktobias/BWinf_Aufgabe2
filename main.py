@@ -1,14 +1,14 @@
 import itertools
 import secrets
-from math import cos, radians, sin
+from math import cos, radians, sin, ceil
 from typing import List, Optional
-
 from sympy import Point
 
 from SemiCircle import SemiCircle
 from Triangle import Triangle
 import tkinter as tk
 from time import sleep
+from knapsack_problem import Item, knapsack
 
 
 def get_triangles_from_file(file_name: str):
@@ -27,44 +27,21 @@ def calculate_triangles_angles_sum(triangles: List[Triangle]):
 
 
 def calculate_difference_to_180(num):
-    return 180 - num
-
-
-def make_semi_circle_list_combination(triangles):
-    triangles_copy: List[Triangle] = triangles[:]
-    semi_circle_list = []
-    while len(triangles_copy) > 0:
-        print(" while")
-        best_triangle_difference = 180
-        best_triangles: Optional[List[Triangle]] = None
-
-        for n in range(1, len(triangles)):
-            combinated_triangles = itertools.combinations(triangles, n)
-            for triangle_combination in combinated_triangles:
-                if calculate_difference_to_180(calculate_triangles_angles_sum(list(triangle_combination))) < 0:  # Wenn die Dreiecke mehr als 180 Grad haben, wird die Kombination übersprungen
-                    continue
-                if calculate_difference_to_180(calculate_triangles_angles_sum(list(triangle_combination))) < best_triangle_difference:
-                    best_triangles: List[Triangle] = list(triangle_combination)
-                    best_triangle_difference = calculate_difference_to_180(calculate_triangles_angles_sum(list(triangle_combination)))
-
-        triangles_copy = [triangle for triangle in triangles_copy if(triangle not in best_triangles)]  # removes all triangles of best_triangles
-        semi_circle_list.append(SemiCircle(best_triangles))
-    return semi_circle_list
+    return MAXIMUM_ANGLE_SEMI_CIRCLE - num
 
 
 def make_semi_circle_list(triangles):
-    triangles_copy: List[Triangle] = triangles[:]
-    semi_circle_list = []
+    triangles_copy = triangles[:]
+    semi_circles = []
     while len(triangles_copy) > 0:
-        best_triangles = triangles_copy[:]
-        while calculate_triangles_angles_sum(best_triangles) > 180:
-            best_triangles.pop()
+        items = [Item(triangle, ceil(triangle.sharpest_angle)) for triangle in triangles_copy]
+        max_value, picked_list = knapsack(MAXIMUM_ANGLE_SEMI_CIRCLE, items)
+        best_triangles = [picked.triangle for picked in picked_list]
+        semi_circles.append(SemiCircle(best_triangles))
         triangles_copy = [triangle for triangle in triangles_copy if (triangle not in best_triangles)]
-        semi_circle_list.append(SemiCircle(best_triangles))
-    return semi_circle_list
+    return semi_circles
 
 
-# TODO triangle naming counter clockwise
 def set_triangle_position_on_the_road(triangle: Triangle, point_at_which_semi_circle_is_placed, sum_of_angles_before):
     point_with_sharpest_angle =  (point_at_which_semi_circle_is_placed, STREET_Y_POSITION)
     point_at_end_of_hypotenuse = (point_with_sharpest_angle[0] - float(cos(radians(sum_of_angles_before)) * triangle.hypotenuse_length), point_with_sharpest_angle[1] + float((sin(radians(sum_of_angles_before)) * triangle.hypotenuse_length)))
@@ -72,7 +49,6 @@ def set_triangle_position_on_the_road(triangle: Triangle, point_at_which_semi_ci
     triangle.a_point = Point(point_with_sharpest_angle)
     triangle.b_point = Point(point_at_end_of_hypotenuse)
     triangle.c_point = Point(point__between_the_cathets)
-
 
 
 def is_triangle_intersecting_triangles_from_former_semi_circle(triangle, former_semi_circle: SemiCircle):
@@ -108,29 +84,25 @@ def set_triangles_on_the_road(semi_circle_list, canvas):
 
             sum_of_angles_before += triangle.sharpest_angle
             triangle.show(canvas, "#" + str(secrets.token_hex(3)))
-        point_at_which_semi_circle_is_placed += semi_circle.triangles[-1].hypotenuse_length
+        point_at_which_semi_circle_is_placed += semi_circle.triangles[-1].sharpest_angle_adjacent_length
 
 
 def main():
-    triangles = get_triangles_from_file("dreiecke3.txt")
+    triangles = get_triangles_from_file("dreiecke4.txt")
     triangles = [Triangle(*triangle) for triangle in triangles]
-    triangle = triangles[0]
     root: tk.Tk = tk.Tk()
-    canvas_width: int = 800
+    canvas_width: int = 1000
     canvas_height: int = 800
     canvas: tk.Canvas = tk.Canvas(root, width=canvas_width, height=canvas_height)
     semi_circle_list = make_semi_circle_list(triangles)
-    colors = ["yellow", "red", "blue"]
+    colors = ["yellow", "red", "blue", "green", "black"]
     for counter, semi_circle in enumerate(semi_circle_list):
-        pass
-        print(calculate_triangles_angles_sum(semi_circle.triangles))
         semi_circle.show(canvas, colors[counter])
     set_triangles_on_the_road(semi_circle_list, canvas)
-    #test_triangle = semi_circle_list[0].triangles[2]
-    #test_triangle.show(canvas)
     root.mainloop()
 
 
 if __name__ == '__main__':
     STREET_Y_POSITION = 400
+    MAXIMUM_ANGLE_SEMI_CIRCLE = 180
     main()
