@@ -87,9 +87,18 @@ def set_triangles_on_the_road(semi_circle_list, canvas):
         point_at_which_semi_circle_is_placed += semi_circle.triangles[-1].sharpest_angle_adjacent_length
 
 
+def measure_distance_and_make_line(semi_circle_list,canvas):
+    first_property = semi_circle_list[0].triangles[0]
+    first_property_door = first_property.a_point
+
+    last_property = semi_circle_list[-1].triangles[-1]
+    last_property_door = last_property.a_point
+    canvas.create_line([round(first_property_door.x), STREET_Y_POSITION - 100], [round(last_property_door.x), STREET_Y_POSITION - 100])
+    return abs(first_property_door.x - last_property_door.y)
+
 def main():
     triangles = get_triangles_from_file("dreiecke4.txt")
-    triangles = [Triangle(*triangle) for triangle in triangles]
+    triangles = [Triangle(*triangle, "D" + str(counter+1)) for counter, triangle in enumerate(triangles)]
     root: tk.Tk = tk.Tk()
     canvas_width: int = 1000
     canvas_height: int = 800
@@ -99,7 +108,10 @@ def main():
     for counter, semi_circle in enumerate(semi_circle_list):
         semi_circle.show(canvas, colors[counter])
     set_triangles_on_the_road(semi_circle_list, canvas)
+    distance_between_first_huse_and_last_house = float(measure_distance_and_make_line(semi_circle_list, canvas))
     root.mainloop()
+    str_triangles_best_positions = [[f"{triangle.name}: ({round(float(triangle.a_point.x))}|{round(float(triangle.a_point.y))}), ({round(float(triangle.b_point.x))}|{round(float(triangle.b_point.y))}), ({round(float(triangle.c_point.x))}|{round(float(triangle.c_point.y))})" for triangle in semi_circle_.triangles] for semi_circle_ in semi_circle_list]
+    print(str_triangles_best_positions)
 
 
 if __name__ == '__main__':

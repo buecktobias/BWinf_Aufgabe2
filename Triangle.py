@@ -5,7 +5,8 @@ from mpmath import degrees
 
 
 class Triangle:
-    def __init__(self, a_cords, b_cords, c_cords):
+    def __init__(self, a_cords, b_cords, c_cords, name):
+        self.name = name
         self.a_point: Point = Point(a_cords)
         self.b_point: Point = Point(b_cords)
         self.c_point: Point = Point(c_cords)
