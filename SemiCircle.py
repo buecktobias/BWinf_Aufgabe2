@@ -5,15 +5,8 @@ from Triangle import Triangle
 class SemiCircle:
     max_value = 180
 
-    def __init__(self):
-        self.triangles: List[Triangle] = []
-
-    def add_triangle(self, triangle: Triangle):
-        assert self.can_triangle_be_added(triangle), "Triangle can not be added !!!"
-        self.triangles.append(triangle)
-
-    def can_triangle_be_added(self, triangle:Triangle):
-        return self.angle_sum + triangle.sharpest_angle < self.max_value
+    def __init__(self, triangles):
+        self.triangles: List[Triangle] = triangles
 
     @property
     def angle_sum(self):
