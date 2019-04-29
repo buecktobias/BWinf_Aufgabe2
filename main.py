@@ -4,6 +4,7 @@ from math import cos, radians, sin, ceil
 from typing import List, Optional
 from sympy import Point
 
+import PolygonGenerator
 from SemiCircle import SemiCircle
 from Triangle import Triangle
 import tkinter as tk
@@ -31,14 +32,17 @@ def calculate_difference_to_180(num):
 
 
 def make_semi_circle_list(triangles):
-    triangles_copy = triangles[:]
+    triangles.sort(key=lambda triangle: triangle.sharpest_angle, reverse=True)
     semi_circles = []
-    while len(triangles_copy) > 0:
-        items = [Item(triangle, ceil(triangle.sharpest_angle)) for triangle in triangles_copy]
-        max_value, picked_list = knapsack(MAXIMUM_ANGLE_SEMI_CIRCLE, items)
-        best_triangles = [picked.triangle for picked in picked_list]
-        semi_circles.append(SemiCircle(best_triangles))
-        triangles_copy = [triangle for triangle in triangles_copy if (triangle not in best_triangles)]
+    for triangle in triangles:
+        for semi_circle in semi_circles:
+            if semi_circle.can_triangle_be_added(triangle):
+                semi_circle.add_triangle(triangle)
+                break
+        else:
+            new_semi_circle = SemiCircle()
+            new_semi_circle.add_triangle(triangle)
+            semi_circles.append(new_semi_circle)
     return semi_circles
 
 
@@ -59,7 +63,7 @@ def is_triangle_intersecting_triangles_from_former_semi_circle(triangle, former_
 
 
 def set_triangles_on_the_road(semi_circle_list, canvas):
-    point_at_which_semi_circle_is_placed = 100
+    point_at_which_semi_circle_is_placed = 20
     for i, semi_circle in enumerate(semi_circle_list):
         if i == 0:
             semi_circle.triangles.sort(key=lambda triangle: triangle.hypotenuse_length, reverse=True)
@@ -106,15 +110,17 @@ def draw_street(canvas, canvas_width):
 
 
 def main():
-    triangles = get_triangles_from_file("dreiecke5.txt")
+    canvas_width: int = 2200
+    canvas_height: int = 800
+    number_of_polygons = 10
+    # triangles = get_triangles_from_file("dreiecke5.txt")
+    triangles = PolygonGenerator.generate_polygons(number_of_polygons, canvas_width, canvas_height, 60, 3)
     triangles = [Triangle(*triangle, "D" + str(counter+1)) for counter, triangle in enumerate(triangles)]
     root: tk.Tk = tk.Tk()
-    canvas_width: int = 1500
-    canvas_height: int = 800
     canvas: tk.Canvas = tk.Canvas(root, width=canvas_width, height=canvas_height)
     draw_street(canvas, canvas_width)
     semi_circle_list = make_semi_circle_list(triangles)
-    colors = ["yellow", "red", "blue", "green", "black", "orange", "grey"]
+    colors = ["yellow", "red", "blue", "green", "black", "orange", "grey", "cyan", "magenta", "purple", "darkgrey", "darkgreen", "darkblue", "dark olive green", "light green", "violet", "forest green", "purple", "yellow3", "brown", "brown4", "gold2"]
     for counter, semi_circle in enumerate(semi_circle_list):
         semi_circle.show(canvas, colors[counter])
     set_triangles_on_the_road(semi_circle_list, canvas)

@@ -3,13 +3,17 @@ from Triangle import Triangle
 
 
 class SemiCircle:
-    colors = ["yellow", "green", "blue", "orange", "red"]
-    semi_circle_count = 0
+    max_value = 180
 
-    def __init__(self, triangles: List[Triangle]):
-        self.color = self.colors[self.semi_circle_count]
-        assert sum([triangle.sharpest_angle for triangle in triangles]) < 180, "Die Summe der schärfsten Winkel muss kleiner als 180 sein!"
-        self.triangles: List[Triangle] = triangles
+    def __init__(self):
+        self.triangles: List[Triangle] = []
+
+    def add_triangle(self, triangle: Triangle):
+        assert self.can_triangle_be_added(triangle), "Triangle can not be added !!!"
+        self.triangles.append(triangle)
+
+    def can_triangle_be_added(self, triangle:Triangle):
+        return self.angle_sum + triangle.sharpest_angle < self.max_value
 
     @property
     def angle_sum(self):
