@@ -105,8 +105,8 @@ def draw_street(canvas, canvas_width):
     canvas.update()
 
 
-def main():
-    triangles = get_triangles_from_file("dreiecke5.txt")
+def main(filename):
+    triangles = get_triangles_from_file(filename)
     triangles = [Triangle(*triangle, "D" + str(counter+1)) for counter, triangle in enumerate(triangles)]
     root: tk.Tk = tk.Tk()
     canvas_width: int = 1500
@@ -127,4 +127,4 @@ def main():
 if __name__ == '__main__':
     STREET_Y_POSITION = 200
     MAXIMUM_ANGLE_SEMI_CIRCLE = 180
-    main()
+    main("dreiecke1.txt")
